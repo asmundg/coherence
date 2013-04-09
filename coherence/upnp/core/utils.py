@@ -518,44 +518,6 @@ class HeaderAwareHTTPClientFactory(client.HTTPClientFactory):
     protocol = myHTTPPageGetter
     noisy = False
 
-    def __init__(self, url, method='GET', postdata=None, headers=None,
-                 agent="Coherence PageGetter", timeout=0, cookies=None,
-                 followRedirect=True, redirectLimit=20):
-        self.followRedirect = followRedirect
-        self.redirectLimit = redirectLimit
-        self._redirectCount = 0
-        self.timeout = timeout
-        self.agent = agent
-
-        if cookies is None:
-            cookies = {}
-        self.cookies = cookies
-        if headers is not None:
-            self.headers = InsensitiveDict(headers)
-        else:
-            self.headers = InsensitiveDict()
-        if postdata is not None:
-            self.headers.setdefault('Content-Length', len(postdata))
-            # just in case a broken http/1.1 decides to keep connection alive
-            self.headers.setdefault("connection", "close")
-        self.postdata = postdata
-        self.method = method
-
-        self.setURL(url)
-
-        self.waiting = 1
-        self.deferred = defer.Deferred()
-        self.response_headers = None
-
-    def buildProtocol(self, addr):
-        p = protocol.ClientFactory.buildProtocol(self, addr)
-        p.method = self.method
-        p.followRedirect = self.followRedirect
-        if self.timeout:
-            timeoutCall = reactor.callLater(self.timeout, p.timeout)
-            self.deferred.addBoth(self._cancelTimeout, timeoutCall)
-        return p
-
     def page(self, page):
         if self.waiting:
             self.waiting = 0
